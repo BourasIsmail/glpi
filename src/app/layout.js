@@ -33,13 +33,15 @@ export default function RootLayout({ children }) {
                       pathName.slice(2)}
                 </div>
               </div>
-              <div className="flex items-center">
+              {pathName === "/login" ? null : (
                 <div className="flex items-center">
-                  <div className="ml-4 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full">
-                    <button>Logout</button>
+                  <div className="flex items-center">
+                    <div className="ml-4 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full">
+                      <button>Logout</button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           {pathName === "/login" ? null : <Sidebar />}
