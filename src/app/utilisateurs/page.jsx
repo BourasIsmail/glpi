@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { dataUser } from "@/data/users/users-data";
-
+import { useQuery } from "@tanstack/react-query";
+import { api, getTickets, getUsers, getCurrentUser } from "@/api";
 const Page = () => {
   const customStyles = {
     content: {
@@ -28,6 +29,10 @@ const Page = () => {
       width: "50vw",
     },
   };
+  const { data: usersData, } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers(),
+  });
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modelDeleteIsOpen, setModelDeleteIsOpen] = useState(false);
   const [value, setValue] = useState();
@@ -243,9 +248,9 @@ const Page = () => {
       </Modal>
       <DataTable
         title={"Users"}
-        filterCol="email"
+        filterCol="name"
         columns={usersCol}
-        data={dataUser}
+        data={usersData || []}
         setOpenModal={openModal}
         settypeOfSubmit={settypeOfSubmit}
         canAdd={true}

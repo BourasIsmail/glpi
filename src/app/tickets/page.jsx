@@ -4,7 +4,9 @@ import { dataTicket } from "@/data/ticket/ticket-data";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Modal from "react-modal";
-
+import { useQuery } from "@tanstack/react-query";
+import { api, getTickets, getUsers, getCurrentUser } from "@/api";
+import { useToast } from "@/components/ui/use-toast";
 import Dropdown from "@/components/dropdown";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +16,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getCookie } from "cookies-next";
+
 import { Switch } from "@/components/ui/switch";
 const Page = () => {
+  const token = getCookie('token');
+  const { toast } = useToast()
+
   const customStyles = {
     content: {
       top: "50%",
@@ -41,11 +48,7 @@ const Page = () => {
   const [typeOfSubmit, settypeOfSubmit] = useState("create");
 
   const ticketColumns = [
-    {
-      accessorKey: "id",
-      header: "Id",
-      cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
-    },
+
     {
       accessorKey: "userInfo",
       header: () => <div className="">User </div>,
@@ -128,6 +131,15 @@ const Page = () => {
     },
   ];
 
+  const { data, refetch } = useQuery({
+    queryKey: ['tickets'],
+    queryFn: getTickets(),
+  });
+  const { data: usersData, } = useQuery({
+    queryKey: ['user'],
+    queryFn: getCurrentUser(),
+  });
+
   function openModal() {
     setIsOpen(true);
   }
@@ -135,12 +147,67 @@ const Page = () => {
   function closeModal() {
     setIsOpen(false);
   }
-
+  const user = getCurrentUser()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(typeOfSubmit, "selectedValue");
+    if (typeOfSubmit === "create" && usersData) {
+      try {
+        await api.post("/tickets/" + usersData.id, {
+          ...selectedValue,
+          dateAchat: achatDate,
+          dateAffectation: affectationDate,
+        })
+        refetch()
+        toast({
+          description: "Material created successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error creating material",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+    else if (typeOfSubmit === "update" && usersData) {
+      try {
+        await api.put("/tickets/" + selectedValue.id + '/user/' + usersData.id, {
+          ...selectedValue,
+          dateAchat: achatDate,
+          dateAffectation: affectationDate,
+        })
+        refetch()
+        toast({
+          description: "Material updated successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error updating material",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+  }
   return (
     <div className="px-6 py-4" id="Tickets">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}
+        selectedValue={selectedValue}
+        refetch={refetch}
+        toast={toast}
       />
       <Modal
         isOpen={modalIsOpen}
@@ -148,7 +215,7 @@ const Page = () => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <form class="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md">
+        <form class="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit}>
           <h2 class="text-lg font-semibold mb-4 px-6">
             {typeOfSubmit === "create"
               ? "Create new material"
@@ -190,18 +257,7 @@ const Page = () => {
               }}
             />
           </div>
-          <div class=" px-6  mb-4 flex flex-col w-full">
-            <label class="block mb-1" for="userInfo">
-              Users
-            </label>
-            <Dropdown
-              comboBoxOpen={comboBoxOpen}
-              data={frameworks}
-              setComboBoxOpen={setComboBoxOpen}
-              value={value}
-              setValue={setValue}
-            />
-          </div>{" "}
+
           <div class=" px-6  mb-4">
             <label class="block mb-1" for="etat">
               Etat
@@ -228,7 +284,7 @@ const Page = () => {
         title={"Tickets"}
         filterCol="nomAuteur"
         columns={ticketColumns}
-        data={dataTicket}
+        data={data || []}
         setOpenModal={openModal}
         settypeOfSubmit={settypeOfSubmit}
         canAdd={true}
@@ -261,7 +317,8 @@ const frameworks = [
   },
 ];
 
-const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
+
+const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal, selectedValue, refetch, toast }) => {
   const customStyles = {
     content: {
       top: "50%",
@@ -274,6 +331,29 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       width: "fit-content",
     },
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.delete("/tickets/" + selectedValue.id)
+      toast({
+        description: "Material deleted successfully",
+        className: "bg-green-500 text-white",
+        duration: 2000,
+        title: "Success",
+      })
+      refetch()
+      closeModal()
+    } catch (e) {
+      toast({
+        description: "Error deleting material",
+        className: "bg-red-500 text-white",
+        duration: 2000,
+        title: "Error",
+      })
+      console.log(e);
+    }
+  }
   return (
     <Modal
       isOpen={modalIsOpen}
@@ -281,7 +361,7 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       style={customStyles}
       contentLabel="Example Modal"
     >
-      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md">
+      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit}>
         <h2 className="text-lg font-semibold mb-4">Delete Item</h2>
         <div className="mb-4">
           <p>Are you sure you want to delete this item?</p>

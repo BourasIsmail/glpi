@@ -57,11 +57,11 @@ export default function index() {
 
       <div className="bg-gray-100 flex justify-center items-center h-screen">
 
-        <div className="w-1/2 h-screen hidden lg:block">
+        <div className="w-2/3 h-screen hidden lg:block">
           <img
-            src="https://placehold.co/800x/667fff/ffffff.png?text=Your+Image&font=Montserrat"
+            src="jisr2.jpg"
             alt="Placeholder Image"
-            className="object-cover w-full h-full"
+            className=" w-full h-full"
           />
         </div>
 

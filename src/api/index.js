@@ -47,11 +47,45 @@ export function getMaterials() {
         return data;
     };
 }
+export function getTickets() {
+    return async () => {
+        // TODO checks and params to all custom hooks
+
+        const token = getCookie('token');
+        const { data } = await api.get('/tickets', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return data;
+    };
+}
 export function getUsers() {
     return async () => {
 
         const token = getCookie('token');
         const { data } = await api.get('/auth/getUsers', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return data;
+    };
+}
+const tokenPayload = async () => {
+    const token = await getCookie('token');
+    if (!token) return null;
+    const payload = token?.split('.')[1];
+    const decodedPayload = await atob(payload);
+    const tokenPay = JSON.parse(decodedPayload);
+    return tokenPay?.sub;
+}
+export function getCurrentUser() {
+    return async () => {
+        const email = await tokenPayload();
+        if (!email) return null;
+        const token = getCookie('token');
+        const { data } = await api.get('/auth/email/' + email, {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
