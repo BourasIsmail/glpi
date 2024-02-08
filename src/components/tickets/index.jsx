@@ -137,7 +137,7 @@ const TicketTable = () => {
   }
 
   return (
-    <div className="px-6 py-4" id="Tickets">
+    <div className="py-4" id="Tickets">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}

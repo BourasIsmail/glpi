@@ -169,7 +169,7 @@ const MaterialTable = () => {
   }
 
   return (
-    <div className="px-6 py-4" id="Materiels">
+    <div className=" py-4" id="Materiels">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}
