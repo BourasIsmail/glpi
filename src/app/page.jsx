@@ -1,5 +1,6 @@
 import Card from "@/components/card";
-import { DataTable } from "@/components/table/table";
+import MaterialTable from "@/components/material";
+import TicketTable from "@/components/tickets";
 import { IoPricetagsOutline } from "react-icons/io5";
 import { MdDevices } from "react-icons/md";
 import { TbDevicesCog } from "react-icons/tb";
@@ -25,8 +26,8 @@ const page = () => {
         />
       </div>
       <div>
-        <DataTable title={"Ticket non traité"} />
-        <DataTable title={"Materiels affecté"} />
+        <TicketTable />
+        <MaterialTable />
       </div>
     </div>
   );

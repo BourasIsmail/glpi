@@ -1,10 +1,11 @@
 "use client";
 import { DataTable } from "@/components/table/table";
-import { dataTicket } from "@/data/ticket/ticket-data";
+import { dataMaterial } from "@/data/material/material-ticket";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Modal from "react-modal";
 
+import DatePicker from "@/components/datePicker";
 import Dropdown from "@/components/dropdown";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-const Page = () => {
+const MaterialTable = () => {
   const customStyles = {
     content: {
       top: "50%",
@@ -40,7 +41,7 @@ const Page = () => {
 
   const [typeOfSubmit, settypeOfSubmit] = useState("create");
 
-  const ticketColumns = [
+  const materialColumns = [
     {
       accessorKey: "id",
       header: "Id",
@@ -56,17 +57,19 @@ const Page = () => {
       },
     },
     {
-      accessorKey: "message",
-      header: "Message",
+      accessorKey: "marqueEtRef",
+      header: "Ref",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("message")}</div>
+        <div className="capitalize">{row.getValue("marqueEtRef")}</div>
       ),
     },
     {
-      accessorKey: "nomAuteur",
-      header: "Nom Auteur",
+      accessorKey: "type",
+      header: ({ column }) => {
+        return <Button variant="ghost">Type</Button>;
+      },
       cell: ({ row }) => (
-        <div className="lowercase">{row.getValue("nomAuteur")}</div>
+        <div className="lowercase">{row.getValue("type")}</div>
       ),
     },
     {
@@ -74,6 +77,35 @@ const Page = () => {
       header: () => <div className="">Etat</div>,
       cell: ({ row }) => {
         const amount = row.getValue("etat");
+
+        return <div className=" font-medium">{amount}</div>;
+      },
+    },
+
+    {
+      accessorKey: "dateAchat",
+      header: () => <div className="">Date achat</div>,
+      cell: ({ row }) => {
+        const dateAchat = parseFloat(row.getValue("dateAchat"));
+
+        return <div className=" font-medium">{dateAchat}</div>;
+      },
+    },
+    {
+      accessorKey: "dateAffectation",
+      header: () => <div className="">Date affectation</div>,
+      cell: ({ row }) => {
+        const dateAffectation = parseFloat(row.getValue("dateAffectation"));
+
+        return <div className=" font-medium">{dateAffectation}</div>;
+      },
+    },
+
+    {
+      accessorKey: "dispo",
+      header: () => <div className="">Dispo</div>,
+      cell: ({ row }) => {
+        const amount = row.getValue("dispo");
 
         return (
           <div className=" font-medium">
@@ -137,7 +169,7 @@ const Page = () => {
   }
 
   return (
-    <div className="px-6 py-4" id="Tickets">
+    <div className="px-6 py-4" id="Materiels">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}
@@ -155,39 +187,77 @@ const Page = () => {
               : " Update current material"}
           </h2>
           <div class=" px-6  mb-4">
-            <label class="block mb-1" for="nomAuteur">
-              Nom Auteur
+            <label class="block mb-1" for="marqueEtRef">
+              Ref
             </label>
             <input
               class="w-full border rounded-md px-3 py-2"
               type="text"
-              id="type"
-              placeholder="Nom Auteur"
-              value={selectedValue?.nomAuteur || ""}
+              id="marqueEtRef"
+              placeholder="Ref"
+              value={selectedValue?.marqueEtRef || ""}
               onChange={(e) => {
                 setselectedValue({
                   ...selectedValue,
-                  nomAuteur: e.target.value,
+                  marqueEtRef: e.target.value,
                 });
               }}
             />
           </div>
           <div class=" px-6  mb-4">
-            <label class="block mb-1" for="message">
-              message
+            <label class="block mb-1" for="type">
+              Type
             </label>
             <input
               class="w-full border rounded-md px-3 py-2"
               type="text"
               id="type"
-              placeholder="message"
-              value={selectedValue?.message || ""}
+              placeholder="Type"
+              value={selectedValue?.type || ""}
               onChange={(e) => {
                 setselectedValue({
                   ...selectedValue,
-                  message: e.target.value,
+                  type: e.target.value,
                 });
               }}
+            />
+          </div>
+          <div class=" px-6  mb-4">
+            <label class="block mb-1" for="etat">
+              Etat
+            </label>
+            <input
+              class="w-full border rounded-md px-3 py-2"
+              type="text"
+              id="etat"
+              placeholder="Etat"
+              value={selectedValue?.etat || ""}
+              onChange={(e) => {
+                setselectedValue({
+                  ...selectedValue,
+                  etat: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div class=" px-6  mb-4 flex flex-col">
+            <label class="block mb-1" for="dateAchat">
+              Date Achat
+            </label>
+            <DatePicker
+              class="w-full border rounded-md px-3 py-2"
+              date={achatDate}
+              setDate={setAchatDate}
+            />
+          </div>
+          <div class=" px-6  mb-4 flex flex-col">
+            <label class="block mb-1" for="dateAffectation">
+              Date Affectation
+            </label>
+            <DatePicker
+              class="w-full border rounded-md px-3 py-2"
+              date={affectationDate}
+              setDate={setAffectationDate}
             />
           </div>
           <div class=" px-6  mb-4 flex flex-col w-full">
@@ -203,16 +273,16 @@ const Page = () => {
             />
           </div>{" "}
           <div class=" px-6  mb-4">
-            <label class="block mb-1" for="etat">
-              Etat
+            <label class="block mb-1" for="dispo">
+              Dispo
             </label>
             <Switch
-              id="etat"
-              checked={selectedValue?.etat}
+              id="dispo"
+              checked={selectedValue?.dispo}
               onCheckedChange={(e) => {
                 setselectedValue({
                   ...selectedValue,
-                  etat: e,
+                  dispo: e,
                 });
               }}
             />
@@ -225,10 +295,10 @@ const Page = () => {
         </form>
       </Modal>
       <DataTable
-        title={"Tickets"}
-        filterCol="nomAuteur"
-        columns={ticketColumns}
-        data={dataTicket}
+        title={"Materiels"}
+        filterCol="marqueEtRef"
+        columns={materialColumns}
+        data={dataMaterial}
         setOpenModal={openModal}
         settypeOfSubmit={settypeOfSubmit}
         canAdd={true}
@@ -237,7 +307,7 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default MaterialTable;
 const frameworks = [
   {
     value: "next.js",

@@ -1,6 +1,5 @@
 "use client";
 import { DataTable } from "@/components/table/table";
-import { dataTicket } from "@/data/ticket/ticket-data";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Modal from "react-modal";
@@ -14,7 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
+import { dataUser } from "@/data/users/users-data";
+
 const Page = () => {
   const customStyles = {
     content: {
@@ -32,57 +32,54 @@ const Page = () => {
   const [modelDeleteIsOpen, setModelDeleteIsOpen] = useState(false);
   const [value, setValue] = useState();
   const [selectedValue, setselectedValue] = useState();
-  const [affectationDate, setAffectationDate] = useState(
-    selectedValue?.dateAffectation || ""
-  );
-  const [achatDate, setAchatDate] = useState(selectedValue?.dateAchat || "");
+
   const [comboBoxOpen, setComboBoxOpen] = useState(false);
 
   const [typeOfSubmit, settypeOfSubmit] = useState("create");
 
-  const ticketColumns = [
+  const usersCol = [
     {
       accessorKey: "id",
       header: "Id",
       cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
     },
     {
-      accessorKey: "userInfo",
-      header: () => <div className="">User </div>,
+      accessorKey: "name",
+      header: () => <div className="">name </div>,
       cell: ({ row }) => {
-        const user = row.getValue("userInfo");
+        const user = row.getValue("name");
 
-        return <div className=" font-medium">{user?.name}</div>;
+        return <div className=" font-medium">{user}</div>;
       },
     },
     {
-      accessorKey: "message",
-      header: "Message",
-      cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("message")}</div>
-      ),
-    },
-    {
-      accessorKey: "nomAuteur",
-      header: "Nom Auteur",
-      cell: ({ row }) => (
-        <div className="lowercase">{row.getValue("nomAuteur")}</div>
-      ),
-    },
-    {
-      accessorKey: "etat",
-      header: () => <div className="">Etat</div>,
+      accessorKey: "email",
+      header: () => <div className="">email </div>,
       cell: ({ row }) => {
-        const amount = row.getValue("etat");
+        const user = row.getValue("email");
 
-        return (
-          <div className=" font-medium">
-            {" "}
-            <Switch id="airplane-mode" checked={amount} />
-          </div>
-        );
+        return <div className=" font-medium">{user}</div>;
       },
     },
+    {
+      accessorKey: "roles",
+      header: () => <div className="">roles </div>,
+      cell: ({ row }) => {
+        const user = row.getValue("roles");
+
+        return <div className=" font-medium">{user}</div>;
+      },
+    },
+    {
+      accessorKey: "divDuService",
+      header: () => <div className="">Div Du Service </div>,
+      cell: ({ row }) => {
+        const user = row.getValue("divDuService");
+
+        return <div className=" font-medium">{user}</div>;
+      },
+    },
+
     {
       id: "actions",
       enableHiding: false,
@@ -104,8 +101,7 @@ const Page = () => {
                 onClick={() => {
                   //get selected row data
                   setselectedValue(row.original);
-                  setAchatDate(row.original.dateAchat);
-                  setAffectationDate(row.original.dateAffectation);
+                  setValue(row.original.roles);
                   setIsOpen(true);
                   settypeOfSubmit("update");
                 }}
@@ -156,43 +152,79 @@ const Page = () => {
           </h2>
           <div class=" px-6  mb-4">
             <label class="block mb-1" for="nomAuteur">
-              Nom Auteur
+              Nom
             </label>
             <input
               class="w-full border rounded-md px-3 py-2"
               type="text"
               id="type"
-              placeholder="Nom Auteur"
-              value={selectedValue?.nomAuteur || ""}
+              placeholder="Nom"
+              value={selectedValue?.name || ""}
               onChange={(e) => {
                 setselectedValue({
                   ...selectedValue,
-                  nomAuteur: e.target.value,
+                  name: e.target.value,
                 });
               }}
             />
           </div>
           <div class=" px-6  mb-4">
             <label class="block mb-1" for="message">
-              message
+              email
+            </label>
+            <input
+              class="w-full border rounded-md px-3 py-2"
+              type="email"
+              id="type"
+              placeholder="email"
+              value={selectedValue?.email || ""}
+              onChange={(e) => {
+                setselectedValue({
+                  ...selectedValue,
+                  email: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div class=" px-6  mb-4">
+            <label class="block mb-1" for="message">
+              password
+            </label>
+            <input
+              class="w-full border rounded-md px-3 py-2"
+              type="password"
+              id="type"
+              placeholder="password"
+              value={selectedValue?.password || ""}
+              onChange={(e) => {
+                setselectedValue({
+                  ...selectedValue,
+                  password: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div class=" px-6  mb-4">
+            <label class="block mb-1" for="message">
+              divDuService
             </label>
             <input
               class="w-full border rounded-md px-3 py-2"
               type="text"
               id="type"
-              placeholder="message"
-              value={selectedValue?.message || ""}
+              placeholder="divDuService"
+              value={selectedValue?.divDuService || ""}
               onChange={(e) => {
                 setselectedValue({
                   ...selectedValue,
-                  message: e.target.value,
+                  divDuService: e.target.value,
                 });
               }}
             />
           </div>
           <div class=" px-6  mb-4 flex flex-col w-full">
             <label class="block mb-1" for="userInfo">
-              Users
+              Roles
             </label>
             <Dropdown
               comboBoxOpen={comboBoxOpen}
@@ -202,21 +234,6 @@ const Page = () => {
               setValue={setValue}
             />
           </div>{" "}
-          <div class=" px-6  mb-4">
-            <label class="block mb-1" for="etat">
-              Etat
-            </label>
-            <Switch
-              id="etat"
-              checked={selectedValue?.etat}
-              onCheckedChange={(e) => {
-                setselectedValue({
-                  ...selectedValue,
-                  etat: e,
-                });
-              }}
-            />
-          </div>
           <div class="mt-4 px-6 flex justify-end">
             <button class="bg-blue-500 text-white px-4 py-2 rounded-md">
               Submit
@@ -225,10 +242,10 @@ const Page = () => {
         </form>
       </Modal>
       <DataTable
-        title={"Tickets"}
-        filterCol="nomAuteur"
-        columns={ticketColumns}
-        data={dataTicket}
+        title={"Users"}
+        filterCol="email"
+        columns={usersCol}
+        data={dataUser}
         setOpenModal={openModal}
         settypeOfSubmit={settypeOfSubmit}
         canAdd={true}
@@ -240,24 +257,12 @@ const Page = () => {
 export default Page;
 const frameworks = [
   {
-    value: "next.js",
-    label: "Next.js",
+    value: "ADMIN_ROLES",
+    label: "ADMIN_ROLES",
   },
   {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
+    value: "USER_ROLES",
+    label: "USER_ROLES",
   },
 ];
 

@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-const Page = () => {
+const TicketTable = () => {
   const customStyles = {
     content: {
       top: "50%",
@@ -237,7 +237,7 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default TicketTable;
 const frameworks = [
   {
     value: "next.js",
