@@ -35,7 +35,6 @@ const Dropdown = ({ comboBoxOpen, setComboBoxOpen, value, data, setValue }) => {
       </PopoverTrigger>
       <PopoverContent className="w-[46vw] p-0">
         <Command>
-          <CommandInput placeholder="Search users..." className="h-9" />
           <CommandEmpty>No Users found.</CommandEmpty>
           <CommandGroup>
             {data.map((framework) => (
