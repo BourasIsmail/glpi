@@ -47,12 +47,69 @@ export function getMaterials() {
         return data;
     };
 }
+
+export function getCounter() {
+    return async () => {
+
+        const token = getCookie('token');
+
+        const [countNonDispoData, countDispoData, countNonTraiteData] = await Promise.all([
+            await api.get('/materiel/countNonDispo', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }), await api.get('/materiel/countDispo', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }), await api.get('/tickets/countNonTraite', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            })
+        ]);
+
+        const data = {
+            countNonDispo: countNonDispoData.data,
+            countDispo: countDispoData.data,
+            countNonTraite: countNonTraiteData.data
+        }
+        return data
+    };
+}
+export function getMaterialsTrue() {
+    return async () => {
+        // TODO checks and params to all custom hooks
+
+        const token = getCookie('token');
+        const { data } = await api.get('/materiel/dispoFilter/true', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return data;
+    };
+}
 export function getTickets() {
     return async () => {
         // TODO checks and params to all custom hooks
 
         const token = getCookie('token');
         const { data } = await api.get('/tickets', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+
+        return data;
+    };
+}
+export function getTicketsFalse() {
+    return async () => {
+        // TODO checks and params to all custom hooks
+
+        const token = getCookie('token');
+        const { data } = await api.get('/tickets/byEtat/false', {
             headers: {
                 Authorization: `Bearer ${token}`,
             }

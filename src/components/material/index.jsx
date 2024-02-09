@@ -4,6 +4,10 @@ import { dataMaterial } from "@/data/material/material-ticket";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Modal from "react-modal";
+import { api, getMaterialsTrue, getUsers } from "@/api";
+import { useQuery } from "@tanstack/react-query";
+import { setCookie, getCookie } from "cookies-next";
+import { useToast } from "@/components/ui/use-toast";
 
 import DatePicker from "@/components/datePicker";
 import Dropdown from "@/components/dropdown";
@@ -16,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-const MaterialTable = () => {
+
+const Page = () => {
   const customStyles = {
     content: {
       top: "50%",
@@ -159,7 +164,17 @@ const MaterialTable = () => {
       },
     },
   ];
+  const { toast } = useToast()
 
+  //use query to get data from the server
+  const { data, refetch } = useQuery({
+    queryKey: ['materiels'],
+    queryFn: getMaterialsTrue(),
+  });
+  const { data: usersData, } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers(),
+  });
   function openModal() {
     setIsOpen(true);
   }
@@ -168,30 +183,87 @@ const MaterialTable = () => {
     setIsOpen(false);
   }
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (typeOfSubmit === "create" && value) {
+      try {
+        await api.post("/materiel/" + value, {
+          ...selectedValue,
+          dateAchat: achatDate,
+          dateAffectation: affectationDate,
+        })
+        refetch()
+        toast({
+          description: "Material created successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error creating material",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+    else if (typeOfSubmit === "update" && value) {
+      try {
+        console.log(typeOfSubmit, value, selectedValue);
+        await api.put("/materiel/" + selectedValue.id + '/user/' + value, {
+          ...selectedValue,
+          dateAchat: achatDate,
+          dateAffectation: affectationDate,
+        })
+        refetch()
+        toast({
+          description: "Material updated successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error updating material",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+  }
+
   return (
-    <div className=" py-4" id="Materiels">
+    <div className="px-6 py-4" id="Materiels">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}
+        selectedValue={selectedValue}
+        refetch={refetch}
+        toast={toast}
       />
+
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <form class="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md">
-          <h2 class="text-lg font-semibold mb-4 px-6">
+        <form className="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit}>
+          <h2 className="text-lg font-semibold mb-4 px-6">
             {typeOfSubmit === "create"
               ? "Create new material"
               : " Update current material"}
           </h2>
-          <div class=" px-6  mb-4">
-            <label class="block mb-1" for="marqueEtRef">
+          <div className=" px-6  mb-4">
+            <label className="block mb-1" for="marqueEtRef">
               Ref
             </label>
             <input
-              class="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-md px-3 py-2"
               type="text"
               id="marqueEtRef"
               placeholder="Ref"
@@ -204,12 +276,12 @@ const MaterialTable = () => {
               }}
             />
           </div>
-          <div class=" px-6  mb-4">
-            <label class="block mb-1" for="type">
+          <div className=" px-6  mb-4">
+            <label className="block mb-1" for="type">
               Type
             </label>
             <input
-              class="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-md px-3 py-2"
               type="text"
               id="type"
               placeholder="Type"
@@ -222,12 +294,12 @@ const MaterialTable = () => {
               }}
             />
           </div>
-          <div class=" px-6  mb-4">
-            <label class="block mb-1" for="etat">
+          <div className=" px-6  mb-4">
+            <label className="block mb-1" for="etat">
               Etat
             </label>
             <input
-              class="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-md px-3 py-2"
               type="text"
               id="etat"
               placeholder="Etat"
@@ -240,40 +312,43 @@ const MaterialTable = () => {
               }}
             />
           </div>
-          <div class=" px-6  mb-4 flex flex-col">
-            <label class="block mb-1" for="dateAchat">
+          <div className=" px-6  mb-4 flex flex-col">
+            <label className="block mb-1" for="dateAchat">
               Date Achat
             </label>
             <DatePicker
-              class="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-md px-3 py-2"
               date={achatDate}
               setDate={setAchatDate}
             />
           </div>
-          <div class=" px-6  mb-4 flex flex-col">
-            <label class="block mb-1" for="dateAffectation">
+          <div className=" px-6  mb-4 flex flex-col">
+            <label className="block mb-1" for="dateAffectation">
               Date Affectation
             </label>
             <DatePicker
-              class="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-md px-3 py-2"
               date={affectationDate}
               setDate={setAffectationDate}
             />
           </div>
-          <div class=" px-6  mb-4 flex flex-col w-full">
-            <label class="block mb-1" for="userInfo">
+          <div className=" px-6  mb-4 flex flex-col w-full">
+            <label className="block mb-1" for="userInfo">
               Users
             </label>
             <Dropdown
               comboBoxOpen={comboBoxOpen}
-              data={frameworks}
+              data={usersData?.map(item => ({
+                value: item.id.toString(),
+                label: item.name
+              })) || []}
               setComboBoxOpen={setComboBoxOpen}
               value={value}
               setValue={setValue}
             />
           </div>{" "}
-          <div class=" px-6  mb-4">
-            <label class="block mb-1" for="dispo">
+          <div className=" px-6  mb-4">
+            <label className="block mb-1" for="dispo">
               Dispo
             </label>
             <Switch
@@ -287,8 +362,8 @@ const MaterialTable = () => {
               }}
             />
           </div>
-          <div class="mt-4 px-6 flex justify-end">
-            <button class="bg-blue-500 text-white px-4 py-2 rounded-md">
+          <div className="mt-4 px-6 flex justify-end">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
               Submit
             </button>
           </div>
@@ -298,7 +373,7 @@ const MaterialTable = () => {
         title={"Materiels"}
         filterCol="marqueEtRef"
         columns={materialColumns}
-        data={dataMaterial}
+        data={data || []}
         setOpenModal={openModal}
         settypeOfSubmit={settypeOfSubmit}
         canAdd={true}
@@ -307,31 +382,9 @@ const MaterialTable = () => {
   );
 };
 
-export default MaterialTable;
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-];
+export default Page;
 
-const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
+const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal, selectedValue, refetch, toast }) => {
   const customStyles = {
     content: {
       top: "50%",
@@ -344,6 +397,29 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       width: "fit-content",
     },
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.delete("/materiel/" + selectedValue.id)
+      toast({
+        description: "Material deleted successfully",
+        className: "bg-green-500 text-white",
+        duration: 2000,
+        title: "Success",
+      })
+      refetch()
+      closeModal()
+    } catch (e) {
+      toast({
+        description: "Error deleting material",
+        className: "bg-red-500 text-white",
+        duration: 2000,
+        title: "Error",
+      })
+      console.log(e);
+    }
+  }
   return (
     <Modal
       isOpen={modalIsOpen}
@@ -351,7 +427,7 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       style={customStyles}
       contentLabel="Example Modal"
     >
-      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md">
+      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit}>
         <h2 className="text-lg font-semibold mb-4">Delete Item</h2>
         <div className="mb-4">
           <p>Are you sure you want to delete this item?</p>
@@ -375,3 +451,5 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
     </Modal>
   );
 };
+
+

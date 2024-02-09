@@ -3,6 +3,7 @@ import { DataTable } from "@/components/table/table";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Modal from "react-modal";
+import { useToast } from "@/components/ui/use-toast";
 
 import Dropdown from "@/components/dropdown";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ const Page = () => {
       width: "50vw",
     },
   };
-  const { data: usersData, } = useQuery({
+  const { data: usersData, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: getUsers(),
   });
@@ -43,11 +44,7 @@ const Page = () => {
   const [typeOfSubmit, settypeOfSubmit] = useState("create");
 
   const usersCol = [
-    {
-      accessorKey: "id",
-      header: "Id",
-      cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
-    },
+
     {
       accessorKey: "name",
       header: () => <div className="">name </div>,
@@ -136,12 +133,83 @@ const Page = () => {
   function closeModal() {
     setIsOpen(false);
   }
+  const { toast } = useToast()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(typeOfSubmit, "selectedValue");
+    const roleMap = {
+      "1": "ADMIN_ROLES",
+      "2": "USER_ROLES",
 
+
+    }
+
+    if (typeOfSubmit === "create" && usersData) {
+      try {
+        await api.post("/auth/addUser", {
+          ...selectedValue,
+          roles: roleMap[value]
+
+        })
+        refetch()
+        toast({
+          description: "user created successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error creating user",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+    else if (typeOfSubmit === "update" && usersData) {
+      try {
+        await api.put("/auth/" + selectedValue.id, {
+          ...selectedValue,
+          roles: roleMap[value]
+        })
+        refetch()
+        toast({
+          description: "user updated successfully",
+          className: "bg-green-500 text-white",
+          duration: 2000,
+          title: "Success",
+        })
+        setIsOpen(false);
+      } catch (e) {
+        toast({
+          description: "Error updating user",
+          className: "bg-red-500 text-white",
+          duration: 2000,
+          title: "Error",
+        })
+      }
+    }
+  }
+  const roles = [
+    {
+      value: "1",
+      label: "admin",
+    },
+    {
+      value: "2",
+      label: "user",
+    },
+  ];
   return (
     <div className="px-6 py-4" id="Tickets">
       <DeleteModal
         closeModal={() => setModelDeleteIsOpen(false)}
         modalIsOpen={modelDeleteIsOpen}
+        selectedValue={selectedValue}
+        refetch={refetch}
+        toast={toast}
       />
       <Modal
         isOpen={modalIsOpen}
@@ -149,7 +217,7 @@ const Page = () => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <form class="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md">
+        <form class="max-w-full mx-auto  py-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit} >
           <h2 class="text-lg font-semibold mb-4 px-6">
             {typeOfSubmit === "create"
               ? "Create new material"
@@ -233,7 +301,10 @@ const Page = () => {
             </label>
             <Dropdown
               comboBoxOpen={comboBoxOpen}
-              data={frameworks}
+              data={roles?.map(item => ({
+                value: item.value.toString(),
+                label: item.label
+              })) || []}
               setComboBoxOpen={setComboBoxOpen}
               value={value}
               setValue={setValue}
@@ -260,18 +331,9 @@ const Page = () => {
 };
 
 export default Page;
-const frameworks = [
-  {
-    value: "ADMIN_ROLES",
-    label: "ADMIN_ROLES",
-  },
-  {
-    value: "USER_ROLES",
-    label: "USER_ROLES",
-  },
-];
 
-const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
+
+const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal, selectedValue, refetch, toast }) => {
   const customStyles = {
     content: {
       top: "50%",
@@ -284,6 +346,28 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       width: "fit-content",
     },
   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.delete("/auth/" + selectedValue.id)
+      toast({
+        description: "Material deleted successfully",
+        className: "bg-green-500 text-white",
+        duration: 2000,
+        title: "Success",
+      })
+      refetch()
+      closeModal()
+    } catch (e) {
+      toast({
+        description: "Error deleting material",
+        className: "bg-red-500 text-white",
+        duration: 2000,
+        title: "Error",
+      })
+      console.log(e);
+    }
+  }
   return (
     <Modal
       isOpen={modalIsOpen}
@@ -291,7 +375,7 @@ const DeleteModal = ({ modalIsOpen, afterOpenModal, closeModal }) => {
       style={customStyles}
       contentLabel="Example Modal"
     >
-      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md">
+      <form className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md" onSubmit={handleSubmit} >
         <h2 className="text-lg font-semibold mb-4">Delete Item</h2>
         <div className="mb-4">
           <p>Are you sure you want to delete this item?</p>
