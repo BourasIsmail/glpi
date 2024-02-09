@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FaUser, FaUsers } from "react-icons/fa";
 import { MdDevices } from "react-icons/md";
 
-const Sidebar = () => {
+const Sidebar = ({ role }) => {
   return (
     <div className="fixed flex flex-col top-0 left-0 w-64 bg-[#007BFF] h-full border-r text-white">
       <div className="flex items-center justify-center h-14 border-b">
@@ -76,17 +76,19 @@ const Sidebar = () => {
             </Link>
           </li>
           <li>
-            <Link
-              href="/utilisateurs"
-              className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-white hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6"
-            >
-              <span className="inline-flex justify-center items-center ml-4">
-                <FaUsers className="w-5 h-5" />
-              </span>
-              <span className="ml-2 text-sm tracking-wide truncate">
-                Utilisateurs
-              </span>
-            </Link>
+            {role !== "USER_ROLES" && (
+              <Link
+                href="/utilisateurs"
+                className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-white hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6"
+              >
+                <span className="inline-flex justify-center items-center ml-4">
+                  <FaUsers className="w-5 h-5" />
+                </span>
+                <span className="ml-2 text-sm tracking-wide truncate">
+                  Utilisateurs
+                </span>
+              </Link>
+            )}
           </li>
         </ul>
         <div className="py-4 space-y-1">
